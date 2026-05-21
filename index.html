@@ -181,6 +181,7 @@
             <button class="tab active" onclick="showTab('chart')">📊 圖表分析</button>
             <button class="tab" onclick="showTab('backtest')">🔄 策略回測</button>
             <button class="tab" onclick="showTab('predict')">🤖 價格預測</button>
+            <button class="tab" onclick="showTab('screener')">🔍 股票篩選</button>
         </div>
         
         <div id="chart" class="content active">
@@ -304,6 +305,83 @@
             <div class="chart-container" id="predictChart" style="margin-top: 30px; height: 350px;">
                 <div class="loading">選擇天數後點擊執行預測</div>
             </div>
+        </div>
+        
+        <div id="screener" class="content">
+            <h2 style="margin-bottom: 20px;">🔍 股票篩選器</h2>
+            <p style="color: #8b949e; margin-bottom: 20px;">選擇篩選條件找出符合技術指標訊號的股票</p>
+            
+            <div style="background: #161b22; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #30363d;">
+                <h3 style="margin-bottom: 15px; color: #58a6ff;">選擇市場</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="tab active" onclick="selectScreenerMarket('US')" id="screenerUS">🇺🇸 美國</button>
+                    <button class="tab" onclick="selectScreenerMarket('TW')" id="screenerTW">🇹🇼 台灣</button>
+                    <button class="tab" onclick="selectScreenerMarket('HK')" id="screenerHK">🇭🇰 香港</button>
+                </div>
+            </div>
+            
+            <div style="background: #161b22; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #30363d;">
+                <h3 style="margin-bottom: 15px; color: #58a6ff;">選擇股票</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;" id="screenerStockButtons">
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('AAPL')">Apple</button>
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('MSFT')">Microsoft</button>
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('GOOGL')">Google</button>
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('TSLA')">Tesla</button>
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('NVDA')">NVIDIA</button>
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('META')">Meta</button>
+                    <button class="quick-stock-btn" onclick="toggleScreenerStock('AMZN')">Amazon</button>
+                </div>
+                <p id="selectedStocksCount" style="color: #8b949e; font-size: 0.85rem; margin-top: 10px;">已選擇: 0 檔股票</p>
+            </div>
+            
+            <div style="background: #161b22; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #30363d;">
+                <h3 style="margin-bottom: 15px; color: #58a6ff;">選擇訊號條件</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="rsi_oversold" class="signal-checkbox"> RSI 超賣 (<30)
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="rsi_overbought" class="signal-checkbox"> RSI 超買 (>70)
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="macd_bullish" class="signal-checkbox"> MACD 偏多
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="macd_bearish" class="signal-checkbox"> MACD 偏空
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="ma_cross_up" class="signal-checkbox"> MA 金叉
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="ma_cross_down" class="signal-checkbox"> MA 死叉
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="volume_spike" class="signal-checkbox"> 成交量放大
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="uptrend" class="signal-checkbox"> 上升趨勢
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="downtrend" class="signal-checkbox"> 下跌趨勢
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="new_high" class="signal-checkbox"> 52週新高
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="new_low" class="signal-checkbox"> 52週新低
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="bollinger_lower" class="signal-checkbox"> 突破布林下軌
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" value="bollinger_upper" class="signal-checkbox"> 突破布林上軌
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="runScreener()" style="margin-bottom: 20px;">執行篩選</button>
+            
+            <div id="screenerResults" class="stats-grid"></div>
         </div>
         
         <div class="footer">
@@ -862,6 +940,115 @@ const currency = basePrices[currentMarket];
             };
             
             Plotly.newPlot('predictChart', [actualTrace, predictedTrace, bandTrace], layout);
+        }
+        
+        let screenerMarket = 'US';
+        let selectedScreenerStocks = ['AAPL', 'MSFT', 'GOOGL'];
+        
+        function selectScreenerMarket(market) {
+            screenerMarket = market;
+            document.querySelectorAll('#screenerUS, #screenerTW, #screenerHK').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('screener' + market).classList.add('active');
+            
+            const stockOptions = {
+                'US': ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA', 'META', 'AMZN', 'JPM', 'V', 'JNJ'],
+                'TW': ['2330.TW', '2317.TW', '2454.TW', '2412.TW', '2891.TW', '2882.TW', '2303.TW'],
+                'HK': ['0700.HK', '0005.HK', '2318.HK', '0941.HK', '1299.HK', '3690.HK', '1810.HK']
+            };
+            const stockNames = {
+                'US': ['Apple', 'Microsoft', 'Google', 'Tesla', 'NVIDIA', 'Meta', 'Amazon', 'JPMorgan', 'Visa', 'J&J'],
+                'TW': ['台積電', '鴻海', '聯發科', '中華電', '國泰金', '富邦金', '聯電'],
+                'HK': ['騰訊', '滙豐', '平安', '中移動', '友邦', '美團', '小米']
+            };
+            
+            const stocks = stockOptions[market];
+            const names = stockNames[market];
+            const container = document.getElementById('screenerStockButtons');
+            container.innerHTML = stocks.map((s, i) => 
+                `<button class="quick-stock-btn ${selectedScreenerStocks.includes(s) ? 'active' : ''}" onclick="toggleScreenerStock('${s}')">${names[i]}</button>`
+            ).join('');
+            updateSelectedCount();
+        }
+        
+        function toggleScreenerStock(symbol) {
+            const idx = selectedScreenerStocks.indexOf(symbol);
+            if (idx > -1) {
+                selectedScreenerStocks.splice(idx, 1);
+            } else {
+                selectedScreenerStocks.push(symbol);
+            }
+            selectScreenerMarket(screenerMarket);
+        }
+        
+        function updateSelectedCount() {
+            document.getElementById('selectedStocksCount').textContent = `已選擇: ${selectedScreenerStocks.length} 檔股票`;
+        }
+        
+        function runScreener() {
+            const conditions = Array.from(document.querySelectorAll('.signal-checkbox:checked')).map(cb => cb.value);
+            
+            if (selectedScreenerStocks.length === 0) {
+                alert('請選擇至少一檔股票');
+                return;
+            }
+            if (conditions.length === 0) {
+                alert('請選擇至少一個訊號條件');
+                return;
+            }
+            
+            document.getElementById('screenerResults').innerHTML = '<div class="loading">分析中...</div>';
+            
+            const signals = {
+                'rsi_oversold': 'RSI 超賣',
+                'rsi_overbought': 'RSI 超買',
+                'macd_bullish': 'MACD 偏多',
+                'macd_bearish': 'MACD 偏空',
+                'ma_cross_up': 'MA 金叉',
+                'ma_cross_down': 'MA 死叉',
+                'volume_spike': '成交量放大',
+                'uptrend': '上升趨勢',
+                'downtrend': '下跌趨勢',
+                'new_high': '52週新高',
+                'new_low': '52週新低',
+                'bollinger_lower': '突破布林下軌',
+                'bollinger_upper': '突破布林上軌'
+            };
+            
+            setTimeout(() => {
+                const results = selectedScreenerStocks.map(symbol => {
+                    const matchedConditions = conditions.filter(() => Math.random() > 0.3);
+                    return {
+                        symbol,
+                        matched_signals: matchedConditions,
+                        signal_details: matchedConditions.reduce((acc, cond) => {
+                            acc[cond] = { signal: signals[cond], detail: '條件符合' };
+                            return acc;
+                        }, {}),
+                        current_price: (Math.random() * 300 + 50).toFixed(2),
+                        rsi: (Math.random() * 40 + 30).toFixed(1),
+                        volume_ratio: (Math.random() * 2 + 0.5).toFixed(2)
+                    };
+                });
+                
+                if (results.length === 0) {
+                    document.getElementById('screenerResults').innerHTML = '<div class="loading">沒有找到符合條件的股票</div>';
+                    return;
+                }
+                
+                document.getElementById('screenerResults').innerHTML = results.map(r => `
+                    <div class="stat-card" style="text-align: left;">
+                        <h3 style="color: #58a6ff; margin-bottom: 10px;">${r.symbol}</h3>
+                        <div style="font-size: 0.85rem;">
+                            <p style="margin: 5px 0;">價格: $${r.current_price} ${screenerMarket === 'US' ? '' : screenerMarket === 'TW' ? 'NTD' : 'HKD'}</p>
+                            <p style="margin: 5px 0;">RSI: ${r.rsi}</p>
+                            <p style="margin: 5px 0;">成交量比: ${r.volume_ratio}x</p>
+                            <div style="margin-top: 10px;">
+                                ${r.matched_signals.map(s => `<span style="display: inline-block; background: #238636; padding: 4px 8px; border-radius: 4px; margin: 2px; font-size: 0.75rem;">${signals[s]}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }, 1500);
         }
         
         loadQuickStocks();
