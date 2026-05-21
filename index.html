@@ -167,9 +167,9 @@
         
         <div class="search-box">
             <select id="marketSelect" onchange="changeMarket()">
-                <option value="HK">🇭🇰 香港</option>
-                <option value="TW">🇹🇼 台灣</option>
                 <option value="US">🇺🇸 美國</option>
+                <option value="TW">🇹🇼 台灣</option>
+                <option value="HK">🇭🇰 香港</option>
             </select>
             <input type="text" id="symbolInput" placeholder="輸入股票代碼" value="0700.HK">
             <button onclick="searchStock()">搜尋</button>
@@ -317,8 +317,8 @@
     </div>
     
     <script>
-        let currentSymbol = '0700.HK';
-        let currentMarket = 'HK';
+        let currentSymbol = 'AAPL';
+        let currentMarket = 'US';
         let stockData = null;
         
         const marketSuffixes = { 'HK': '.HK', 'TW': '.TW', 'US': '' };
